@@ -1,13 +1,12 @@
 import os
 
 prefix = "/usr/lib64/botson"
+VariantDir('build', 'src', duplicate=0)
 
 env = Environment(CCFLAGS=['-std=c++11', '-g', '-DGL_GLEXT_PROTOTYPES'])
 
-sources = Glob('src/*.cpp')
-
 btx_sdk = env.SharedLibrary(target="btxsdk",
-                        source=sources,
+                        source=Glob('build/*.cpp'),
                         LIBS=['GL', 'glut', 'jpeg', 'png'],
                         SHLIBVERSION="0.0.1")
 
