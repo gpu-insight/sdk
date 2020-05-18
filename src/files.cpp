@@ -1,5 +1,6 @@
 #include "../include/files.hpp"
 #include <cstdio>
+
 const GLchar *text(std::string path) {
     const char *filename = path.c_str();
 #ifdef WIN32

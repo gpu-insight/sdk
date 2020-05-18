@@ -1,6 +1,5 @@
-#ifndef _PROGRAM_HPP_
-#define _PROGRAM_HPP_
 #pragma once
+
 #include "shader.hpp"
 #include <GL/gl.h>
 #include <iostream>
@@ -8,6 +7,9 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "botson_sdk.hpp"
+
+BOTSON_SDK_API
 class Program {
 public:
   template <typename... Args>
@@ -42,4 +44,4 @@ private:
 
   Program(std::vector<Shader>);
 };
-#endif//_PROGRAM_HPP
+

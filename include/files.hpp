@@ -1,8 +1,8 @@
-#ifndef _ENGINE_FILES_HPP_
-#define _ENGINE_FILES_HPP_
 #pragma once
-#include <GL/gl.h>
-#include <iostream>
+
 #include <string>
+#include <GL/gl.h>
+#include "botson_sdk.hpp"
+
+BOTSON_SDK_API
 const GLchar *text(std::string path);
-#endif//_ENGINE_FILES_HPP

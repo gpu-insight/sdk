@@ -1,13 +1,14 @@
 import os
 
-env = Environment(CCFLAGS=['-std=c++11', '-g'],
-                  CPPDEFINES={'GL_GLEXT_PROTOTYPES': ''})
+prefix = "/usr/lib64/botson"
 
-sources = Glob('*.cpp')
+env = Environment(CCFLAGS=['-std=c++11', '-g', '-DGL_GLEXT_PROTOTYPES'])
 
-sdk = env.SharedLibrary(target="btxsdk",
+sources = Glob('src/*.cpp')
+
+btx_sdk = env.SharedLibrary(target="btxsdk",
                         source=sources,
                         LIBS=['GL', 'glut', 'jpeg', 'png'],
-                        SHLIBVERSION="1.1.1")
+                        SHLIBVERSION="0.0.1")
 
-# env.InstallVersionedLib(target="lib", source=sdk)
+env.Alias("install", env.Install(os.path.join(prefix, "lib"), btx_sdk))

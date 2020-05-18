@@ -1,11 +1,12 @@
-#ifndef _SHADER_HPP_
-#define _SHADER_HPP_
+#pragma once
 
 #include <GL/gl.h>
 #include <cstdio>
 #include <iostream>
 #include <string>
+#include "botson_sdk.hpp"
 
+BOTSON_SDK_API
 class Shader {
 public:
   static Shader file(GLenum type, std::string path);
@@ -18,4 +19,3 @@ private:
   Shader(GLuint id, GLenum type);
 };
 
-#endif//_SHADER_HPP_

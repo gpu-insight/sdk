@@ -2,10 +2,11 @@
 
 #include <iostream>
 #include <GLFW/glfw3.h>
+#include "botson_sdk.hpp"
 #include "component.hpp"
 #include "matrices.hpp"
 
-
+BOTSON_SDK_API
 class Camera : public Component {
 public:
     void on(Event *event) override;
