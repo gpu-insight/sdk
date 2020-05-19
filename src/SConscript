@@ -1,0 +1,8 @@
+Import('env')
+
+btx_sdk = env.SharedLibrary(target="btxsdk",
+                            source=Glob('*.cpp'),
+                            LIBS=['GL', 'glut', 'jpeg', 'png'],
+                            SHLIBVERSION="0.0.1")
+
+env.InstallFiles('install', btx_sdk, 'lib_install')
