@@ -5,4 +5,4 @@ btx_sdk = env.SharedLibrary(target="btxsdk",
                             LIBS=['GL', 'glut', 'jpeg', 'png'],
                             SHLIBVERSION="0.0.1")
 
-env.InstallFiles('install', btx_sdk, 'lib_install')
+env.InstallLibs('install', btx_sdk)

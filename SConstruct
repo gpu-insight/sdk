@@ -6,30 +6,29 @@ vars.Add(PathVariable('INSTALL_DIR', 'Path to install', '/usr/local/botson', Pat
 env = Environment(variables=vars,
                   CCFLAGS=['-fPIC', '-std=c++11', '-g', '-DGL_GLEXT_PROTOTYPES'])
 
-env['lib_install'] = os.path.join("$INSTALL_DIR", "lib64")
-env['inc_install'] = os.path.join("$INSTALL_DIR", "include/SDK")
 
-def install_files(env, name, source, dest, *args, **kw):
+def install_libs(env, name, source, *args, **kw):
     # source may be a non-iterable
     try:
         iter(source)
-    except TypeError, te:
+    except TypeError as te:
         source = [source]
 
     installed_files = []
     for src in source:
-        installed_files += env.Install(env[dest], src)
+        installed_files += env.InstallVersionedLib(target=os.path.join('$INSTALL_DIR', 'lib64'), source=src)
 
     env.Alias(name, installed_files)
 
-env.AddMethod(install_files, 'InstallFiles')
 
-env.InstallFiles('install', Glob('include/*.hpp'), 'inc_install')
+env.AddMethod(install_libs, 'InstallLibs')
 
-Export( 'env' )
+env.Alias("install", env.Install(os.path.join('$INSTALL_DIR', 'include/SDK'), Glob('include/*.hpp')))
+
+Export('env')
 
 # Subdirectory
-SConscript( 'src/SConscript', variant_dir='build', duplicate=0 )
+SConscript('src/SConscript', variant_dir='build', duplicate=0)
 
 # Uninstall
 env.Command("uninstall", None, Delete(FindInstalledFiles()))
