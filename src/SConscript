@@ -6,3 +6,4 @@ btx_sdk = env.SharedLibrary(target="btxsdk",
                             SHLIBVERSION="0.0.1")
 
 env.InstallLibs('install', btx_sdk)
+
