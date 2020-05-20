@@ -4,7 +4,8 @@ vars = Variables(None, ARGUMENTS)
 vars.Add(PathVariable('INSTALL_DIR', 'Path to install', '/usr/local/botson', PathVariable.PathIsDir))
 
 env = Environment(variables=vars,
-                  CCFLAGS=['-fPIC', '-std=c++11', '-g', '-DGL_GLEXT_PROTOTYPES'])
+                  CCFLAGS=['-fPIC', '-std=c++11', '-g', '-DGL_GLEXT_PROTOTYPES'],
+                  LAUNCHDIR=GetLaunchDir())
 
 
 def install_libs(env, name, source, *args, **kw):
@@ -28,7 +29,7 @@ env.Alias("install", env.Install(os.path.join('$INSTALL_DIR', 'include/SDK'), Gl
 Export('env')
 
 # Subdirectory
-SConscript('src/SConscript', variant_dir='build', duplicate=0)
+SConscript('src/SConscript', variant_dir=os.path.join(env['LAUNCHDIR'], 'build'), duplicate=0)
 
 # Uninstall
 env.Command("uninstall", None, Delete(FindInstalledFiles()))
