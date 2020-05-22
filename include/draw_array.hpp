@@ -1,12 +1,15 @@
 #ifndef UMD_DRAW_ARRAY_HPP
 #define UMD_DRAW_ARRAY_HPP
-class Program;
+
 #include "draw_command.hpp"
-#include "../../../include/icanvas.hpp"
+#include "icanvas.hpp"
 #include "vertex_attrib.hpp"
+
 
 namespace botson {
     namespace sdk {
+        class Program;
+
         template <typename T>
         class draw_array : public draw_command {
         private:
