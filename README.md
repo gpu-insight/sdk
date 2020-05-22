@@ -12,5 +12,5 @@ scons
 sudo scons install [INSTALL_DIR=/path/to/install]
 ```
 
-Note that INSTALL_DIR is `/usr/local/botson` by default if it is omitted.
+Note that INSTALL_DIR is `/usr/local/botson` by default if not specified.
 
