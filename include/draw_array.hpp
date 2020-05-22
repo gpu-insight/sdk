@@ -5,7 +5,6 @@
 #include "icanvas.hpp"
 #include "vertex_attrib.hpp"
 
-
 namespace botson {
     namespace sdk {
         class Program;
@@ -31,5 +30,5 @@ namespace botson {
     }
 }
 
-#include "../draw_array.tpp"
+#include "draw_array.tpp"
 #endif //UMD_DRAW_ARRAY_HPP
