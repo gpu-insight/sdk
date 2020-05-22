@@ -4,11 +4,10 @@
 #include "draw_command.hpp"
 #include "icanvas.hpp"
 #include "vertex_attrib.hpp"
+#include "program.hpp"
 
 namespace botson {
     namespace sdk {
-        class Program;
-
         template <typename T>
         class draw_array : public draw_command {
         private:
