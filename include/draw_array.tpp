@@ -1,7 +1,6 @@
-#include <program.hpp>
+#include "program.hpp"
 #include "context.hpp"
 #include "draw_array.hpp"
-#include "../src/common/common.hpp"
 
 
 namespace umd = botson::sdk;

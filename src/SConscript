@@ -1,6 +1,6 @@
 Import('env')
 
-src_files = Glob('*.cpp') + Glob('common/*.[ct]pp')
+src_files = Glob('*.cpp') + Glob('common/*.cpp')
 
 btx_sdk = env.SharedLibrary(target="SDK",
                             source=src_files,
