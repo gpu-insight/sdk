@@ -2,11 +2,10 @@
 #define UMD_ICANVAS_HPP
 
 #include "drawable.hpp"
+#include "pixel.hpp"
 
 namespace botson {
     namespace sdk {
-        class pixel;
-
         class icanvas : public drawable {
         public:
             enum antialising {REGULAR, MULTISAMPLE};
