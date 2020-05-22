@@ -1,6 +1,7 @@
 #ifndef UMD_DRAW_ELEMENTS_HPP
 #define UMD_DRAW_ELEMENTS_HPP
 
+#include "draw_command.hpp"
 #include "vertex_attrib.hpp"
 #include "vertex_index.hpp"
 
