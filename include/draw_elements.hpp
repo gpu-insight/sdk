@@ -3,7 +3,7 @@
 
 #include "vertex_attrib.hpp"
 #include "vertex_index.hpp"
-#include "common.hpp"
+
 namespace botson {
     namespace sdk {
         template<typename T>
@@ -28,5 +28,5 @@ namespace botson {
     }
 }
 
-#include "../draw_elements.tpp"
+#include "draw_elements.tpp"
 #endif //UMD_DRAW_ELEMENTS_HPP
