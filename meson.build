@@ -19,3 +19,10 @@ dep_png = dependency('libpng', required : true)
 inc_src = include_directories('include')
 
 subdir('src')
+
+# Docs
+doxygen = find_program('doxygen', required : false)
+if doxygen.found()
+    subdir('doc')
+endif
+
