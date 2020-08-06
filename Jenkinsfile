@@ -31,7 +31,7 @@ def artifact(build, name) {
 pipeline {
     agent {
         node {
-            label 'sdk'
+            label 'umd'
         }
     }
     triggers {
