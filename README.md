@@ -12,9 +12,9 @@ meson build
 sudo ninja-build -C build install
 ```
 
-By default libbotson_sdk is installed at system library directory(/usr/local/lib64) and its documents are installed at
+By default **libbotson_sdk.so** will be installed at system library directory `/usr/local/lib64` and its docs are installed at
 `/usr/local/share/doc/botson-sdk`. If you intend to change the default installation directory, then run this before installation
 
 ```bash
-meson configure -Dprefix=/path/to/your/intended/dir build
+meson configure -Dprefix=/path/to/your/directory build
 ```
