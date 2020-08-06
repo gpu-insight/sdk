@@ -4,13 +4,17 @@ in C++ so that it is easier to create an OpenGL application for developers.
 
 ## Build
 ```bash
-scons
+meson build
 ```
 
 ## Install
 ```bash
-sudo scons install [INSTALL_DIR=/path/to/install]
+sudo ninja-build -C build install
 ```
 
-Note that INSTALL_DIR is `/usr/local/botson` by default if not specified.
+By default libbotson_sdk is installed at system library directory(/usr/local/lib64) and its documents are installed at
+`/usr/local/share/doc/botson-sdk`. If you intend to change the default installation directory, then run this before installation
 
+```bash
+meson configure -Dprefix=/path/to/your/intended/dir build
+```
