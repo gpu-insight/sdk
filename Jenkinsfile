@@ -109,10 +109,6 @@ pipeline {
                 }
             }
         }
-        stage('publish') {
-            steps  {
-            }
-        }
     }
 
     post {
