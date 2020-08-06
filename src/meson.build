@@ -45,6 +45,7 @@ sdk_src = files(
 )
 
 add_project_arguments('-DGL_GLEXT_PROTOTYPES', language : ['c', 'cpp'])
+add_project_link_arguments('-ljpeg', language : ['c', 'cpp'])
 
 botson_sdk = shared_library(
     'botson_sdk',

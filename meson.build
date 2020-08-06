@@ -12,7 +12,7 @@ cpp = meson.get_compiler('cpp')
 dep_gl = dependency('GL', required : true)
 dep_x11 = dependency('x11', required : false)
 dep_egl = dependency('egl', required : false)
-dep_jpg = dependency('libjpeg', required : true)
+dep_jpg = dependency('libjpeg', required : false)
 dep_png = dependency('libpng', required : true)
 
 # Headers
