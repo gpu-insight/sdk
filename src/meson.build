@@ -58,3 +58,11 @@ botson_sdk = shared_library(
 
 install_headers(sdk_headers, subdir : 'SDK')
 
+pkg.generate(
+    name : 'botson_sdk',
+    description : 'Botson OpenGL SDK Library',
+    version : meson.project_version(),
+    libraries : botson_sdk,
+    libraries_private : sdk_priv_libs
+)
+

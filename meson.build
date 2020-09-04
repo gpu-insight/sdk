@@ -15,8 +15,27 @@ dep_egl = dependency('egl', required : false)
 dep_jpg = dependency('libjpeg', required : false)
 dep_png = dependency('libpng', required : true)
 
+sdk_priv_libs = []
+if dep_gl.found()
+    sdk_priv_libs += '-lGL'
+endif
+if dep_x11.found()
+    sdk_priv_libs += '-lX11'
+endif
+if dep_egl.found()
+    sdk_priv_libs += '-lEGL'
+endif
+if dep_jpg.found()
+    sdk_priv_libs += '-ljpeg'
+endif
+if dep_jpg.found()
+    sdk_priv_libs += '-lpng'
+endif
+
 # Headers
 inc_src = include_directories('include')
+
+pkg = import('pkgconfig')
 
 subdir('src')
 
