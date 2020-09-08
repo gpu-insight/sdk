@@ -2,9 +2,20 @@
 The SDK encapsulates the manipulation of OpenGL texture, matrix, shaders and so on
 in C++ so that it is easier to create an OpenGL application for developers.
 
-## Build
+## Prerequisites
+The following devel packages are required to compile this library.
+- EGL (optional)
+- freeglut3 (optional)
+- glm
+- GL
+- jpeg
+- png
+- X11
+
+## Compilation
 ```bash
 meson build
+ninja -C build
 ```
 
 ## Install
