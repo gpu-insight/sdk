@@ -1,4 +1,4 @@
-# Botson SDK
+# GPU-Insight SDK
 The SDK encapsulates the manipulation of OpenGL texture, matrix, shaders and so on
 in C++ so that it is easier to create an OpenGL application for developers.
 
@@ -9,11 +9,11 @@ meson build
 
 ## Install
 ```bash
-sudo ninja-build -C build install
+sudo ninja -C build install
 ```
 
-By default **libbotson_sdk.so** will be installed at system library directory `/usr/local/lib64` and its docs are installed at
-`/usr/local/share/doc/botson-sdk`. If you intend to change the default installation directory, then run this before installation
+NOTE: The library will be installed at system directory and so will its docs. If you intend to change the
+default installation directory, then run this before installation
 
 ```bash
 meson configure -Dprefix=/path/to/your/directory build
