@@ -1,0 +1,1 @@
+install_subdir('shaders', install_dir : get_option('datadir') / 'sietium')
