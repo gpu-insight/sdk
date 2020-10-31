@@ -1,9 +1,8 @@
-Sietium® SDK & Samples
-=====================
-The SDK provides abstraction of drawing, texture, shader program operations in OpenGL API. Besides
-it also simplifies the presentation of 3D rendering and creation of OpenGL demo.
+# GPU-Insight SDK
+The SDK encapsulates the manipulation of OpenGL texture, matrix, shaders and so on
+in C++ so that it is easier to create an OpenGL application for developers.
 
-# Prerequisites
+## Prerequisites
 The following devel packages are required to compile this library.
 - EGL (optional)
 - freeglut3 (optional)
@@ -13,11 +12,15 @@ The following devel packages are required to compile this library.
 - png
 - X11
 
-# Build & Install
+## Compilation
 ```bash
 meson build
-meson compile -C build
-meson install -C build
+ninja -C build
+```
+
+## Install
+```bash
+sudo ninja -C build install
 ```
 
 NOTE: The library will be installed at system directory and so will its docs. If you intend to change the

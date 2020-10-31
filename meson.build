@@ -1,5 +1,5 @@
 project(
-    'Sietium SDK',
+    'Botson SDK',
     ['c', 'cpp'],
     version : '0.1.0',
     default_options : ['c_std=c99', 'cpp_std=c++11']
@@ -38,7 +38,6 @@ inc_src = include_directories('include')
 pkg = import('pkgconfig')
 
 subdir('src')
-subdir('samples')
 
 # Docs
 doxygen = find_program('doxygen', required : false)
