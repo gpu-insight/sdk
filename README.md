@@ -14,6 +14,7 @@ The following devel packages are required to compile this library.
 - X11
 
 # Build & Install
+This project supports both of build systems, familiar CMake or faster [Meson](https://mesonbuild.com/).
 ```bash
 meson build
 meson compile -C build
