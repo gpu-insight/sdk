@@ -13,4 +13,8 @@ find_package(JPEG REQUIRED)
 find_package(PNG REQUIRED)
 
 add_subdirectory(sisdk)
-add_subdirectory(samples EXCLUDE_FROM_ALL)
+
+find_package(SISDK QUIET)
+if (SISDK_FOUND)
+    add_subdirectory(samples)
+endif(SISDK_FOUND)

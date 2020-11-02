@@ -1,4 +1,3 @@
-find_package(SISDK REQUIRED)
 find_package(GLUT)
 find_package(X11)
 

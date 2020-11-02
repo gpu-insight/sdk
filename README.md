@@ -22,6 +22,7 @@ mkdir build && cd build
 cmake ..
 make && make install        # build SDK
 
+cmake ..
 cd samples
 make && make install        # build Samples
 ```
