@@ -14,7 +14,7 @@ The following devel packages are required to compile this library.
 - X11
 
 # Build & Install
-This project supports both of build systems, familiar CMake or faster [Meson](https://mesonbuild.com/). It is noted that the SDK library and samples are put together but the latter depends on the former. Consequently you'd better build the library before samples.
+This project supports both of build systems, familiar CMake or faster [Meson](https://mesonbuild.com/). It should be noted that the SDK library and samples are put together but the latter depends on the former. Consequently you'd better build the library before samples.
 
 ## CMake
 ```
