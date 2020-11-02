@@ -58,8 +58,10 @@ configure_file(sisdk.pc.in sisdk.pc @ONLY)
 
 if (OpenGL_OpenGL_FOUND)
     include_directories(${OPENGL_INCLUDE_DIR})
-    target_link_libraries(sisdk ${OPENGL_gl_LIBRARY})
-    message(STATUS "OpenGL found" ${OPENGL_INCLUDE_DIR} ${OPENGL_gl_LIBRARY})
+    target_link_libraries(sisdk ${OPENGL_gl_LIBRARY}
+            ${OPENGL_egl_LIBRARY}
+            ${JPEG_LIBRARIES}
+            ${PNG_LIBRARIES})
 endif(OpenGL_OpenGL_FOUND)
 
 

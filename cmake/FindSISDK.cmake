@@ -1,0 +1,5 @@
+find_path(SISDK_INCLUDE_DIR SDK/context.hpp REQUIRED)
+find_library(SISDK_LIBRARIES sisdk REQUIRED)
+
+mark_as_advanced(SISDK_INCLUDE_DIR SISDK_LIBRARIES)
+
