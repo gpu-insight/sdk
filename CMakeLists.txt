@@ -14,7 +14,8 @@ find_package(PNG REQUIRED)
 
 add_subdirectory(sisdk)
 
-find_package(SISDK QUIET)
+find_package(SISDK)
 if (SISDK_FOUND)
     add_subdirectory(samples)
 endif(SISDK_FOUND)
+
