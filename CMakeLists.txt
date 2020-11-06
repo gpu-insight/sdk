@@ -2,6 +2,11 @@ cmake_minimum_required(VERSION 3.9)
 
 project(sisdk VERSION 1.1.0 DESCRIPTION "Sietium SDK and Samples")
 
+set(CMAKE_C_COMPILER g++)
+if (CMAKE_COMPILER_IS_GNUCXX)
+    add_compile_options(-std=c++11)
+endif(CMAKE_COMPILER_IS_GNUCXX)
+
 cmake_policy(SET CMP0072 OLD)
 set(CMAKE_MODULE_PATH
     "${CMAKE_SOURCE_DIR}/cmake"
