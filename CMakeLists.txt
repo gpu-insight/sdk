@@ -18,6 +18,7 @@ find_package(JPEG REQUIRED)
 find_package(PNG REQUIRED)
 
 add_subdirectory(sisdk)
+add_subdirectory(doc)
 
 find_package(SISDK)
 if (SISDK_FOUND)
