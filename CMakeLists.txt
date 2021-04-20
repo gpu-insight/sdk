@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.9)
 
-project(sisdk VERSION 1.1.0 DESCRIPTION "Sietium SDK and Samples")
+project(sisdk
+    VERSION 1.1.0
+    DESCRIPTION "Sietium SDK and Samples"
+    LANGUAGES CXX)
 
 set(CMAKE_C_COMPILER g++)
 if (CMAKE_COMPILER_IS_GNUCXX)
@@ -8,10 +11,7 @@ if (CMAKE_COMPILER_IS_GNUCXX)
 endif(CMAKE_COMPILER_IS_GNUCXX)
 
 cmake_policy(SET CMP0072 OLD)
-set(CMAKE_MODULE_PATH
-    "${CMAKE_SOURCE_DIR}/cmake"
-    "${CMAKE_MODULE_PATH}"
-)
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 find_package(OpenGL REQUIRED)
 find_package(JPEG REQUIRED)
