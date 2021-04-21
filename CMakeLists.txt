@@ -18,7 +18,13 @@ find_package(JPEG REQUIRED)
 find_package(PNG REQUIRED)
 
 add_subdirectory(sisdk)
-add_subdirectory(doc)
+
+find_package(Doxygen)
+if(Doxygen_FOUND)
+    add_subdirectory(doc)
+else()
+    message(STATUS "Doxygen not found, not building docs")
+endif()
 
 find_package(SISDK)
 if (SISDK_FOUND)

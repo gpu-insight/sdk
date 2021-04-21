@@ -1,11 +1,8 @@
-find_package(Doxygen
-        REQUIRED dot
-        OPTIONAL_COMPONENTS mscgen dia)
+set(DOXYGEN_EXTRACT_ALL YES)
+set(DOXYGEN_BUILTIN_STL_SUPPORT YES)
 
-if(DOXYGEN_FOUND)
-    doxygen_add_docs(doc ${PROJECT_SOURCE_DIR}
-            WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
-            COMMENT "Generating API documentation with Doxygen")
+doxygen_add_docs(doc ${PROJECT_SOURCE_DIR}
+        WORKING_DIRECTORY ${PROJECT_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen")
 
-    install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/html DESTINATION share/doc)
-endif()
+install(DIRECTORY ${PROJECT_CURRENT_BINARY_DIR}/html DESTINATION share/doc)
