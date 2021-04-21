@@ -1,4 +1,4 @@
-#include "../include/program.hpp"
+#include <sis/program.hpp>
 
 void Program::activate() { glUseProgram(program); }
 

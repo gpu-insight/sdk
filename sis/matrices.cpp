@@ -1,5 +1,4 @@
-
-#include "../include/matrices.hpp"
+#include <sis/matrices.hpp>
 
 Matrices *Matrices::_instance = nullptr;
 

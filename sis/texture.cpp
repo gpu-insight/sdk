@@ -1,9 +1,9 @@
 #include <cstdio>
 #include <string>
 #include <jpeglib.h>
-#include <string.h>
 #include <png.h>
-#include "../include/texture.hpp"
+#include <string.h>
+#include <sis/texture.hpp>
 
 
 Texture::Texture(GLenum target, GLsizei width, GLsizei height, GLsizei depth, void *pixel)

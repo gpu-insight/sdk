@@ -1,7 +1,7 @@
 #include "common.hpp"
-#include "draw_command.hpp"
-#include "framebuffer.hpp"
-#include "pixel.hpp"
+#include <sis/draw_command.hpp>
+#include <sis/framebuffer.hpp>
+#include <sis/pixel.hpp>
 
 
 namespace umd = botson::sdk;

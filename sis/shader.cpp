@@ -1,5 +1,5 @@
-#include "../include/shader.hpp"
-#include "../include/files.hpp"
+#include <sis/shader.hpp>
+#include <sis/files.hpp>
 #include <stdexcept>
 
 Shader Shader::file(GLenum type, std::string path) {

@@ -1,5 +1,5 @@
-#include "../include/files.hpp"
 #include <cstdio>
+#include <sis/files.hpp>
 
 const GLchar *text(std::string path) {
     const char *filename = path.c_str();

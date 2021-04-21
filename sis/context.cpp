@@ -1,6 +1,6 @@
 #include "common.hpp"
-#include "context.hpp"
-#include "screen.hpp"
+#include <sis/context.hpp>
+#include <sis/screen.hpp>
 
 namespace umd = botson::sdk;
 

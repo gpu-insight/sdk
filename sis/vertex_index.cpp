@@ -1,5 +1,5 @@
 #include "common.hpp"
-#include "vertex_index.hpp"
+#include <sis/vertex_index.hpp>
 
 namespace umd = botson::sdk;
 
