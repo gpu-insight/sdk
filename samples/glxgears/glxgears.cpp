@@ -17,9 +17,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <GL/gl.h>
 #include <GL/glx.h>
-#include <GL/glxext.h>
 #include <sis/program.hpp>
 #include <sis/shader.hpp>
 #include <X11/Xlib.h>
