@@ -54,12 +54,13 @@ add_library(sis SHARED
 set_target_properties(sis PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 1)
 
 target_include_directories(sis PUBLIC ../include)
-target_link_libraries(sis PRIVATE ${OPENGL_gl_LIBRARY}
-    ${OPENGL_egl_LIBRARY}
-    ${JPEG_LIBRARIES}
-    ${PNG_LIBRARIES})
+target_link_libraries(sis
+    PUBLIC ${OPENGL_gl_LIBRARY}
+    PRIVATE ${OPENGL_egl_LIBRARY}
+    PRIVATE ${JPEG_LIBRARIES}
+    PRIVATE ${PNG_LIBRARIES})
 target_compile_features(sis PUBLIC cxx_std_11)
-target_compile_definitions(sis PRIVATE GL_GLEXT_PROTOTYPES)
+target_compile_definitions(sis PUBLIC GL_GLEXT_PROTOTYPES)
 
 source_group(
     TREE "${PROJECT_SOURCE_DIR}/include"

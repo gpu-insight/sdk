@@ -1,47 +1,82 @@
-/*
- * Copyright (C) 1999-2001  Brian Paul   All Rights Reserved.
+/* =================================================================
+ * Copyright (c) 2020 Botson Corp
  *
- * Permission is hereby granted, free of charge, to any person obtaining a
- * copy of this software and associated documentation files (the "Software"),
- * to deal in the Software without restriction, including without limitation
- * the rights to use, copy, modify, merge, publish, distribute, sublicense,
- * and/or sell copies of the Software, and to permit persons to whom the
- * Software is furnished to do so, subject to the following conditions:
+ * This program is proprietary and confidential information of Botson.
+ * And may not be used unless duly authorized.
  *
- * The above copyright notice and this permission notice shall be included
- * in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
- * OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL
- * BRIAN PAUL BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN
- * AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * Revision:
+ * Date: 2020-09-04
+ * Author: Luc
+ * Descriptions:
+ *  This is an advanced version of the famous "glxgears" that requires
+ *  at least OpenGL 3.3 core profile.
  */
-
-/*
- * Ported to GLES2.
- * Kristian Høgsberg <krh@bitplanet.net>
- * May 3, 2010
- *
- * Improve GLES2 port:
- *   * Refactor gear drawing.
- *   * Use correct normals for surfaces.
- *   * Improve shader.
- *   * Use perspective projection transformation.
- *   * Add FPS count.
- *   * Add comments.
- * Alexandros Frantzis <alexandros.frantzis@linaro.org>
- * Jul 13, 2010
- */
+// =================================================================
 
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <GL/gl.h>
+#include <GL/glx.h>
+#include <GL/glxext.h>
+#include <sis/program.hpp>
+#include <sis/shader.hpp>
+#include <X11/Xlib.h>
+#include <X11/keysym.h>
+#include "config.h"
+#include "save2bmp.h"
+
+#ifndef GLX_MESA_swap_control
+#define GLX_MESA_swap_control 1
+typedef int (*PFNGLXGETSWAPINTERVALMESAPROC)(void);
+#endif
+
+#define BENCHMARK
+
+#ifdef BENCHMARK
+
+/* XXX this probably isn't very portable */
+
 #include <sys/time.h>
 #include <unistd.h>
-#include <GL/glut.h>
+
+/* return current time (in seconds) */
+static double current_time(void) {
+    struct timeval tv;
+#ifdef __VMS
+    (void)gettimeofday(&tv, NULL);
+#else
+    struct timezone tz;
+    (void)gettimeofday(&tv, &tz);
+#endif
+    return (double)tv.tv_sec + tv.tv_usec / 1000000.0;
+}
+
+#else /*BENCHMARK*/
+
+/* dummy */
+static double current_time(void) {
+    /* update this function for other platforms! */
+    static double t = 0.0;
+    static int warn = 1;
+    if (warn) {
+        fprintf(stderr, "Warning: current_time() not implemented!!\n");
+        warn = 0;
+    }
+    return t += 1.0;
+}
+
+#endif /*BENCHMARK*/
+
+#ifndef M_PI
+#define M_PI 3.14159265
+#endif
+
+/** Event handler results: */
+#define NOP 0
+#define EXIT 1
+#define DRAW 2
 
 #define STRIPS_PER_TOOTH 7
 #define VERTICES_PER_TOOTH 34
@@ -74,14 +109,18 @@ struct gear {
     int nstrips;
     /** The Vertex Buffer Object holding the vertices in the graphics card */
     GLuint vbo;
+    /** for Mesa's llvmpipe. if no, glDrawArrays(no VAO bound) */
+    GLuint vao;
 };
 
-/** The view rotation [x, y, z] */
-static GLfloat view_rot[3] = {20.0, 30.0, 0.0};
+/** The view rotation */
+static GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 /** The gears */
 static struct gear *gear1, *gear2, *gear3;
 /** The current gear rotation angle */
 static GLfloat angle = 0.0;
+/** The linked shader program */
+static Program *program;
 /** The location of the shader uniforms */
 static GLuint ModelViewProjectionMatrix_location, NormalMatrix_location,
     LightSourcePosition_location, MaterialColor_location;
@@ -89,6 +128,38 @@ static GLuint ModelViewProjectionMatrix_location, NormalMatrix_location,
 static GLfloat ProjectionMatrix[16];
 /** The direction of the directional light for the scene */
 static const GLfloat LightSourcePosition[4] = {5.0, 5.0, 10.0, 1.0};
+
+typedef enum {
+    GEAR_RED = 1,
+    GEAR_GREEN = 2,
+    GEAR_BLUE = 4,
+    GEAR_ALL = 7,
+} gear_mask;
+
+static gear_mask gear_filter = GEAR_ALL;
+static GLboolean fullscreen = GL_FALSE; /* Create a single fullscreen window */
+static GLboolean bmp = GL_FALSE;     /* Enable stereo.  */
+static GLint samples = 0;           /* Choose visual with at least N samples. */
+static GLboolean animate = GL_TRUE; /* Animation */
+
+static unsigned int winWidth = 300, winHeight = 300;
+
+/**
+ * Determine whether or not a GLX extension is supported.
+ */
+static int is_glx_extension_supported(Display *dpy, const char *query) {
+    const int scrnum = DefaultScreen(dpy);
+    const char *glx_extensions = NULL;
+    const size_t len = strlen(query);
+    const char *ptr;
+
+    if (glx_extensions == NULL) {
+        glx_extensions = glXQueryExtensionsString(dpy, scrnum);
+    }
+
+    ptr = strstr(glx_extensions, query);
+    return ((ptr != NULL) && ((ptr[len] == ' ') || (ptr[len] == '\0')));
+}
 
 /**
  * Fills a gear vertex.
@@ -112,9 +183,6 @@ static GearVertex *vert(GearVertex *v, GLfloat x, GLfloat y, GLfloat z,
 
     return v + 1;
 }
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wnarrowing"
 
 /**
  *  Create a gear wheel.
@@ -274,6 +342,9 @@ static struct gear *create_gear(GLfloat inner_radius, GLfloat outer_radius,
     glBufferData(GL_ARRAY_BUFFER, gear->nvertices * sizeof(GearVertex),
                  gear->vertices, GL_STATIC_DRAW);
 
+    glGenVertexArrays(1, &gear->vao);
+    glBindVertexArray(gear->vao);
+
     return gear;
 }
 
@@ -334,8 +405,6 @@ static void rotate(GLfloat *m, GLfloat angle, GLfloat x, GLfloat y, GLfloat z) {
 
     multiply(m, r);
 }
-
-#pragma GCC diagnostic pop
 
 /**
  * Translates a 4x4 matrix.
@@ -439,6 +508,7 @@ void perspective(GLfloat *m, GLfloat fovy, GLfloat aspect, GLfloat zNear,
     memcpy(m, tmp, sizeof(tmp));
 }
 
+
 /**
  * Draws a gear.
  *
@@ -506,7 +576,7 @@ static void draw_gear(struct gear *gear, GLfloat *transform, GLfloat x,
 /**
  * Draws the gears.
  */
-static void gears_draw(void) {
+static void draw_gears(void) {
     const static GLfloat red[4] = {0.8, 0.1, 0.0, 1.0};
     const static GLfloat green[4] = {0.0, 0.8, 0.2, 1.0};
     const static GLfloat blue[4] = {0.2, 0.2, 1.0, 1.0};
@@ -518,78 +588,37 @@ static void gears_draw(void) {
 
     /* Translate and rotate the view */
     translate(transform, 0, 0, -20);
-    rotate(transform, 2 * M_PI * view_rot[0] / 360.0, 1, 0, 0);
-    rotate(transform, 2 * M_PI * view_rot[1] / 360.0, 0, 1, 0);
-    rotate(transform, 2 * M_PI * view_rot[2] / 360.0, 0, 0, 1);
+    rotate(transform, 2 * M_PI * view_rotx / 360.0, 1, 0, 0);
+    rotate(transform, 2 * M_PI * view_roty / 360.0, 0, 1, 0);
+    rotate(transform, 2 * M_PI * view_rotz / 360.0, 0, 0, 1);
 
     /* Draw the gears */
-    draw_gear(gear1, transform, -3.0, -2.0, angle, red);
-    draw_gear(gear2, transform, 3.1, -2.0, -2 * angle - 9.0, green);
-    draw_gear(gear3, transform, -3.1, 4.2, -2 * angle - 25.0, blue);
+    if (GEAR_RED & gear_filter) draw_gear(gear1, transform, -3.0, -2.0, angle, red);
+    if (GEAR_GREEN & gear_filter) draw_gear(gear2, transform, 3.1, -2.0, -2 * angle - 9.0, green);
+    if (GEAR_BLUE & gear_filter) draw_gear(gear3, transform, -3.1, 4.2, -2 * angle - 25.0, blue);
 }
 
-/**
- * Handles a new window size or exposure.
- *
- * @param width the window width
- * @param height the window height
- */
-static void gears_reshape(int width, int height) {
-    /* Update the projection matrix */
-    perspective(ProjectionMatrix, 60.0, width / (float)height, 1.0, 1024.0);
-
-    /* Set the viewport */
-    glViewport(0, 0, (GLint)width, (GLint)height);
-}
-
-static void gears_keyboard(unsigned char key, int x, int y) {
-    switch (key) {
-    case 27:
-        exit(0);
-        break;
-    default:
-        break;
-    }
-}
-
-/**
- * Handles special glut events.
- *
- * @param special the event to handle.
- */
-static void gears_special(int special, int x, int y) {
-    switch (special) {
-    case GLUT_KEY_LEFT:
-        view_rot[1] += 5.0;
-        break;
-    case GLUT_KEY_RIGHT:
-        view_rot[1] -= 5.0;
-        break;
-    case GLUT_KEY_UP:
-        view_rot[0] += 5.0;
-        break;
-    case GLUT_KEY_DOWN:
-        view_rot[0] -= 5.0;
-        break;
-    }
-}
-
-static void gears_idle(void) {
+/** Draw single frame, do SwapBuffers, compute FPS */
+static void draw_frame(Display *dpy, Window win) {
     static int frames = 0;
     static double tRot0 = -1.0, tRate0 = -1.0;
-    double dt, t = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
+    double dt, t = current_time();
 
     if (tRot0 < 0.0)
         tRot0 = t;
     dt = t - tRot0;
     tRot0 = t;
 
-    /* advance rotation for next frame */
-    angle += 70.0 * dt; /* 70 degrees per second */
-    if (angle > 3600.0)
-        angle -= 3600.0;
+    if (animate) {
+        /* advance rotation for next frame */
+        angle += 70.0 * dt; /* 70 degrees per second */
+        if (angle > 3600.0)
+            angle -= 3600.0;
+    }
 
-    glutPostRedisplay();
+    draw_gears();
+    glXSwapBuffers(dpy, win);
+
     frames++;
 
     if (tRate0 < 0.0)
@@ -599,60 +628,44 @@ static void gears_idle(void) {
         GLfloat fps = frames / seconds;
         printf("%d frames in %3.1f seconds = %6.3f FPS\n", frames, seconds,
                fps);
+        fflush(stdout);
         tRate0 = t;
         frames = 0;
     }
 }
 
-static const char vertex_shader[] =
+/* new window size or exposure */
+static void reshape(int width, int height) {
+    /* Update the projection matrix */
+    perspective(ProjectionMatrix, 60.0, width / (float)height, 1.0, 1024.0);
 
-static const char fragment_shader[] =
+    /* Set the viewport */
+    glViewport(0, 0, (GLint)width, (GLint)height);
+}
 
-static void gears_init(void) {
-    GLuint v, f, program;
-    const char *p;
-    char msg[512];
-
+static void init(void) {
     glEnable(GL_CULL_FACE);
     glEnable(GL_DEPTH_TEST);
 
+    std::cout << glGetString(GL_VERSION) << "\n";
     /* Compile the vertex shader */
-    p = vertex_shader;
-    v = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(v, 1, &p, NULL);
-    glCompileShader(v);
-    glGetShaderInfoLog(v, sizeof msg, NULL, msg);
-    printf("vertex shader info: %s\n", msg);
+    std::string data_path = std::string(SAMPLES_DATA_PATH);
 
-    /* Compile the fragment shader */
-    p = fragment_shader;
-    f = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(f, 1, &p, NULL);
-    glCompileShader(f);
-    glGetShaderInfoLog(f, sizeof msg, NULL, msg);
-    printf("fragment shader info: %s\n", msg);
+    program = Program::from(
+        Shader::file(GL_VERTEX_SHADER, data_path + "/shaders/gear.vert"),
+        Shader::file(GL_FRAGMENT_SHADER, data_path + "/shaders/gear.frag"));
 
-    /* Create and link the shader program */
-    program = glCreateProgram();
-    glAttachShader(program, v);
-    glAttachShader(program, f);
-    glBindAttribLocation(program, 0, "position");
-    glBindAttribLocation(program, 1, "normal");
-
-    glLinkProgram(program);
-    glGetProgramInfoLog(program, sizeof msg, NULL, msg);
-    printf("info: %s\n", msg);
-
-    /* Enable the shaders */
-    glUseProgram(program);
+    program->activate();
 
     /* Get the locations of the uniforms so we can access them */
     ModelViewProjectionMatrix_location =
-        glGetUniformLocation(program, "ModelViewProjectionMatrix");
-    NormalMatrix_location = glGetUniformLocation(program, "NormalMatrix");
+        program->uniform("ModelViewProjectionMatrix");
+    NormalMatrix_location =
+        program->uniform("NormalMatrix");
     LightSourcePosition_location =
-        glGetUniformLocation(program, "LightSourcePosition");
-    MaterialColor_location = glGetUniformLocation(program, "MaterialColor");
+        program->uniform("LightSourcePosition");
+    MaterialColor_location =
+        program->uniform("MaterialColor");
 
     /* Set the LightSourcePosition uniform which is constant throught the
      * program */
@@ -664,26 +677,354 @@ static void gears_init(void) {
     gear3 = create_gear(1.3, 2.0, 0.5, 10, 0.7);
 }
 
+/**
+ * Remove window border/decorations.
+ */
+static void no_border(Display *dpy, Window w) {
+    static const unsigned MWM_HINTS_DECORATIONS = (1 << 1);
+    static const int PROP_MOTIF_WM_HINTS_ELEMENTS = 5;
+
+    typedef struct {
+        unsigned long flags;
+        unsigned long functions;
+        unsigned long decorations;
+        long inputMode;
+        unsigned long status;
+    } PropMotifWmHints;
+
+    PropMotifWmHints motif_hints;
+    Atom prop, proptype;
+    unsigned long flags = 0;
+
+    /* setup the property */
+    motif_hints.flags = MWM_HINTS_DECORATIONS;
+    motif_hints.decorations = flags;
+
+    /* get the atom for the property */
+    prop = XInternAtom(dpy, "_MOTIF_WM_HINTS", True);
+    if (!prop) {
+        /* something went wrong! */
+        return;
+    }
+
+    /* not sure this is correct, seems to work, XA_WM_HINTS didn't work */
+    proptype = prop;
+
+    XChangeProperty(dpy, w,                        /* display, window */
+                    prop, proptype,                /* property, type */
+                    32,                            /* format: 32-bit datums */
+                    PropModeReplace,               /* mode */
+                    (unsigned char *)&motif_hints, /* data */
+                    PROP_MOTIF_WM_HINTS_ELEMENTS   /* nelements */
+    );
+}
+
+/*
+ * Create an RGB, double-buffered window.
+ * Return the window and context handles.
+ */
+static void make_window(Display *dpy, const char *name, int x, int y, int width,
+                        int height, Window *winRet, GLXContext *ctxRet,
+                        VisualID *visRet) {
+    int attribs[64];
+    int profile_attrib[] = {
+        GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+	    GLX_CONTEXT_MINOR_VERSION_ARB, 3,
+	    None
+    };
+    int i = 0;
+
+    int scrnum;
+    XSetWindowAttributes attr;
+    unsigned long mask;
+    Window root;
+    Window win;
+    XVisualInfo *vinfo;
+    GLXContext ctx;
+    GLXFBConfig *fbconfigs;
+    int n;
+
+    /* Key/value attributes. */
+    attribs[i++] = GLX_RENDER_TYPE;
+    attribs[i++] = GLX_RGBA_BIT;
+    attribs[i++] = GLX_DOUBLEBUFFER;
+    attribs[i++] = True;
+    attribs[i++] = GLX_RED_SIZE;
+    attribs[i++] = 1;
+    attribs[i++] = GLX_GREEN_SIZE;
+    attribs[i++] = 1;
+    attribs[i++] = GLX_BLUE_SIZE;
+    attribs[i++] = 1;
+    attribs[i++] = GLX_DEPTH_SIZE;
+    attribs[i++] = 1;
+    if (samples > 0) {
+        attribs[i++] = GLX_SAMPLE_BUFFERS;
+        attribs[i++] = 1;
+        attribs[i++] = GLX_SAMPLES;
+        attribs[i++] = samples;
+    }
+
+    attribs[i++] = None;
+
+    scrnum = DefaultScreen(dpy);
+    root = RootWindow(dpy, scrnum);
+
+    fbconfigs = glXChooseFBConfig(dpy, scrnum, attribs, &n);
+    if (!fbconfigs) {
+        printf("Error: couldn't get an RGB, Double-buffered");
+        if (samples > 0)
+            printf(", Multisample");
+        printf(" FBConfig\n");
+        exit(1);
+    }
+
+    vinfo = glXGetVisualFromFBConfig(dpy, fbconfigs[0]);
+    /* window attributes */
+    attr.background_pixel = 0;
+    attr.border_pixel = 0;
+    attr.colormap = XCreateColormap(dpy, root, vinfo->visual, AllocNone);
+    attr.event_mask = StructureNotifyMask | ExposureMask | KeyPressMask;
+    /* XXX this is a bad way to get a borderless window! */
+    mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
+
+    win = XCreateWindow(dpy, root, x, y, width, height, 0, vinfo->depth,
+                        InputOutput, vinfo->visual, mask, &attr);
+
+    if (fullscreen)
+        no_border(dpy, win);
+
+    /* set hints and properties */
+    {
+        XSizeHints sizehints;
+        sizehints.x = x;
+        sizehints.y = y;
+        sizehints.width = width;
+        sizehints.height = height;
+        sizehints.flags = USSize | USPosition;
+        XSetNormalHints(dpy, win, &sizehints);
+        XSetStandardProperties(dpy, win, name, name, None, (char **)NULL, 0,
+                               &sizehints);
+    }
+
+    if (is_glx_extension_supported(dpy, "GLX_ARB_create_context_profile")) {
+        PFNGLXCREATECONTEXTATTRIBSARBPROC pglXCreateContextAttribsARB =
+                (PFNGLXCREATECONTEXTATTRIBSARBPROC) glXGetProcAddressARB(
+                        (const GLubyte *) "glXCreateContextAttribsARB");
+        ctx = (*pglXCreateContextAttribsARB)(dpy, fbconfigs[0], NULL, True, profile_attrib);
+    } else {
+        ctx = glXCreateContext(dpy, vinfo, NULL, True);
+    }
+
+    if (!ctx) {
+        printf("Error: failed to create GL context.\n");
+        exit(1);
+    }
+
+    *winRet = win;
+    *ctxRet = ctx;
+    *visRet = vinfo->visualid;
+
+    XFree(vinfo);
+}
+
+/**
+ * Attempt to determine whether or not the display is synched to vblank.
+ */
+static void query_vsync(Display *dpy, GLXDrawable drawable) {
+    int interval = 0;
+
+#if defined(GLX_EXT_swap_control)
+    if (is_glx_extension_supported(dpy, "GLX_EXT_swap_control")) {
+        unsigned int tmp = -1;
+        glXQueryDrawable(dpy, drawable, GLX_SWAP_INTERVAL_EXT, &tmp);
+        interval = tmp;
+    } else
+#endif
+        if (is_glx_extension_supported(dpy, "GLX_MESA_swap_control")) {
+        PFNGLXGETSWAPINTERVALMESAPROC pglXGetSwapIntervalMESA =
+            (PFNGLXGETSWAPINTERVALMESAPROC)glXGetProcAddressARB(
+                (const GLubyte *)"glXGetSwapIntervalMESA");
+
+        interval = (*pglXGetSwapIntervalMESA)();
+    } else if (is_glx_extension_supported(dpy, "GLX_SGI_swap_control")) {
+        /* The default swap interval with this extension is 1.  Assume that it
+         * is set to the default.
+         *
+         * Many Mesa-based drivers default to 0, but all of these drivers also
+         * export GLX_MESA_swap_control.  In that case, this branch will never
+         * be taken, and the correct result should be reported.
+         */
+        interval = 1;
+    }
+
+    if (interval > 0) {
+        printf("Running synchronized to the vertical refresh.  The framerate "
+               "should be\n");
+        if (interval == 1) {
+            printf("approximately the same as the monitor refresh rate.\n");
+        } else if (interval > 1) {
+            printf("approximately 1/%d the monitor refresh rate.\n", interval);
+        }
+    }
+}
+
+/**
+ * Handle one X event.
+ * \return NOP, EXIT or DRAW
+ */
+static int handle_event(Display *dpy, Window win, XEvent *event) {
+    (void)dpy;
+    (void)win;
+
+    switch (event->type) {
+    case Expose:
+        return DRAW;
+    case ConfigureNotify:
+        reshape(event->xconfigure.width, event->xconfigure.height);
+        break;
+    case KeyPress: {
+        char buffer[10];
+        int code;
+        code = XLookupKeysym(&event->xkey, 0);
+        if (code == XK_Left) {
+            view_roty += 5.0;
+        } else if (code == XK_Right) {
+            view_roty -= 5.0;
+        } else if (code == XK_Up) {
+            view_rotx += 5.0;
+        } else if (code == XK_Down) {
+            view_rotx -= 5.0;
+        } else {
+            XLookupString(&event->xkey, buffer, sizeof(buffer), NULL, NULL);
+            if (buffer[0] == 27) {
+                /* escape */
+                return EXIT;
+            } else if (buffer[0] == 'a' || buffer[0] == 'A') {
+                animate = !animate;
+            }
+        }
+        return DRAW;
+    }
+    }
+    return NOP;
+}
+
+static void event_loop(Display *dpy, Window win) {
+    char filename[128] = {0};
+    unsigned long long frame = 0;
+    while (1) {
+        int op;
+        while (!animate || XPending(dpy) > 0) {
+            XEvent event;
+            XNextEvent(dpy, &event);
+            op = handle_event(dpy, win, &event);
+            if (op == EXIT)
+                return;
+            else if (op == DRAW)
+                break;
+        }
+
+        draw_frame(dpy, win);
+
+        if (bmp)
+        {
+            snprintf(filename, sizeof(filename), "glxgears-%020llu.bmp", frame++);
+            save2bmp(filename, winWidth, winHeight);
+        }
+    }
+}
+
+static void usage(void) {
+    printf("Usage:\n");
+    printf("  -display <displayname>  set the display to run on\n");
+    printf("  -bmp                    save in bitmap format\n");
+    printf("  -samples N              run in multisample mode with at least N "
+           "samples\n");
+    printf("  -fullscreen             run in fullscreen mode\n");
+    printf("  -info                   display OpenGL renderer info\n");
+    printf("  -geometry WxH+X+Y       window geometry\n");
+    printf("  -gears <mask>            which gears will be drawn\n");
+}
+
 int main(int argc, char *argv[]) {
-    glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
+    int x = 0, y = 0;
+    Display *dpy;
+    Window win;
+    GLXContext ctx;
+    char *dpyName = NULL;
+    GLboolean printInfo = GL_FALSE;
+    VisualID visId;
+    int i;
 
-    /* Initialize the window */
-    glutInitWindowSize(300, 300);
-    glutInitWindowPosition(100, 100);
-    glutCreateWindow("Mesa Gears");
+    for (i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-display") == 0) {
+            dpyName = argv[i + 1];
+            i++;
+        } else if (strcmp(argv[i], "-info") == 0) {
+            printInfo = GL_TRUE;
+        } else if (strcmp(argv[i], "-bmp") == 0) {
+            bmp = GL_TRUE;
+        } else if (i < argc - 1 && strcmp(argv[i], "-samples") == 0) {
+            samples = strtod(argv[i + 1], NULL);
+            ++i;
+        } else if (i < argc - 1 && strcmp(argv[i], "-gears") == 0) {
+            gear_filter = (gear_mask)strtod(argv[i + 1], NULL);
+            ++i;
+        } else if (strcmp(argv[i], "-fullscreen") == 0) {
+            fullscreen = GL_TRUE;
+        } else if (i < argc - 1 && strcmp(argv[i], "-geometry") == 0) {
+            XParseGeometry(argv[i + 1], &x, &y, &winWidth, &winHeight);
+            i++;
+        } else {
+            usage();
+            return -1;
+        }
+    }
 
-    /* Set up glut callback functions */
-    glutIdleFunc(gears_idle);
-    glutReshapeFunc(gears_reshape);
-    glutDisplayFunc(gears_draw);
-    glutSpecialFunc(gears_special);
-    glutKeyboardFunc(gears_keyboard);
+    dpy = XOpenDisplay(dpyName);
+    if (!dpy) {
+        printf("Error: couldn't open display %s\n",
+               dpyName ? dpyName : getenv("DISPLAY"));
+        return -1;
+    }
 
-    /* Initialize the gears */
-    gears_init();
+    if (fullscreen) {
+        int scrnum = DefaultScreen(dpy);
 
-    glutMainLoop();
+        x = 0;
+        y = 0;
+        winWidth = DisplayWidth(dpy, scrnum);
+        winHeight = DisplayHeight(dpy, scrnum);
+    }
+
+    make_window(dpy, "glxgears", x, y, winWidth, winHeight, &win, &ctx, &visId);
+    XMapWindow(dpy, win);
+    glXMakeCurrent(dpy, win, ctx);
+    query_vsync(dpy, win);
+
+    if (printInfo) {
+        printf("GL_RENDERER   = %s\n", (char *)glGetString(GL_RENDERER));
+        printf("GL_VERSION    = %s\n", (char *)glGetString(GL_VERSION));
+        printf("GL_VENDOR     = %s\n", (char *)glGetString(GL_VENDOR));
+        printf("GL_EXTENSIONS = %s\n", (char *)glGetString(GL_EXTENSIONS));
+        printf("VisualID %d, 0x%x\n", (int)visId, (int)visId);
+    }
+
+    init();
+
+    /* Set initial projection/viewing transformation.
+     * We can't be sure we'll get a ConfigureNotify event when the window
+     * first appears.
+     */
+    reshape(winWidth, winHeight);
+
+    event_loop(dpy, win);
+
+    glXMakeCurrent(dpy, None, NULL);
+    glXDestroyContext(dpy, ctx);
+    XDestroyWindow(dpy, win);
+    XCloseDisplay(dpy);
 
     return 0;
 }
+
