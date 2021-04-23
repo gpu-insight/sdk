@@ -60,7 +60,7 @@ private:
 
     Matrices(Matrices &) {}
 
-    Matrices &operator=(Matrices const &) {}
+    Matrices& operator=(const Matrices& rhs);
 
     glm::vec3 _camera;
 

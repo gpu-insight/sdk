@@ -60,8 +60,8 @@ typedef struct bmp_data tBMP;
 
 void bmp_info(struct file_header file_header, struct bmp_header bmp_header);
 int read_bmp(tBMP *bmp_data);
-int rgba_to_stream(tBMP *bmp_data);
-int stream_to_rgba(unsigned int *stream, tBMP bmp_data);
+void rgba_to_stream(tBMP *bmp_data);
+void stream_to_rgba(unsigned int *stream, tBMP bmp_data);
 int write_bmp(const char *file_name, tBMP bmp_data);
 void rgb_info(tBMP bmp_data);
 void read_png(TexData *image);  // GL_RGBA

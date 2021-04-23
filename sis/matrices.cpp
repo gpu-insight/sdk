@@ -10,6 +10,15 @@ Matrices *Matrices::instance() {
     return _instance;
 }
 
+Matrices& Matrices::operator=(const Matrices& rhs) {
+    this->_model = rhs._model;
+    this->_projection = rhs._projection;
+    this->_view = rhs._view;
+    this->_camera = rhs._camera;
+
+    return *this;
+}
+
 void Matrices::rotate(float angle, float x, float y, float z) {
     this->_model = glm::rotate(this->_model, angle, glm::vec3(x, y, z));
 }

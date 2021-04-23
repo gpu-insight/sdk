@@ -99,7 +99,6 @@ int read_bmp(tBMP *bmp_data)
 	l_width = WIDTHBYTES(bmp_data->width * bmp_data->depth);
 	len = l_width * bmp_data->height;
 	bmp_data->image_data =(unsigned char *)malloc(len);
-    printf("%x\n", bmp_data->image_data);
 	if(bmp_data->image_data == NULL) {
 		printf("malloc err \n");
 		return -1;
@@ -135,7 +134,7 @@ int read_bmp(tBMP *bmp_data)
 	return 0;
 }
 
-int rgba_to_stream(tBMP *bmp_data)
+void rgba_to_stream(tBMP *bmp_data)
 {
 	unsigned char * red = bmp_data->rgb.red;
 	unsigned char * green = bmp_data->rgb.green;
@@ -155,7 +154,7 @@ int rgba_to_stream(tBMP *bmp_data)
 		index = index + 4;
 	}
 }
-int stream_to_rgba(unsigned int * stream, tBMP bmp_data)
+void stream_to_rgba(unsigned int * stream, tBMP bmp_data)
 {
 	unsigned char * red = bmp_data.rgb.red;
 	unsigned char * green = bmp_data.rgb.green;

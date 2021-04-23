@@ -270,8 +270,8 @@ static struct gear *create_gear(GLfloat inner_radius, GLfloat outer_radius,
     } while (0)
 
         struct point {
-            GLfloat x;
-            GLfloat y;
+            GLdouble x;
+            GLdouble y;
         };
 
         /* Create the 7 points (only x,y coords) used to draw a tooth */
@@ -384,7 +384,7 @@ static void rotate(GLfloat *m, GLfloat angle, GLfloat x, GLfloat y, GLfloat z) {
     double s, c;
 
     sincos(angle, &s, &c);
-    GLfloat r[16] = {x * x * (1 - c) + c,
+    GLdouble r[16] = {x * x * (1 - c) + c,
                      y * x * (1 - c) + z * s,
                      x * z * (1 - c) - y * s,
                      0,
@@ -401,7 +401,7 @@ static void rotate(GLfloat *m, GLfloat angle, GLfloat x, GLfloat y, GLfloat z) {
                      0,
                      1};
 
-    multiply(m, r);
+    multiply(m, (GLfloat *)r);
 }
 
 /**
