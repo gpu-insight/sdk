@@ -60,7 +60,8 @@ private:
 
     Matrices(Matrices &) {}
 
-    Matrices& operator=(const Matrices& rhs);
+    // Singleton assignment operator is nonsense.
+    Matrices& operator=(const Matrices& rhs) = delete;
 
     glm::vec3 _camera;
 
