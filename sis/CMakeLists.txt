@@ -1,38 +1,6 @@
 include(GNUInstallDirs)
 
-set(HEADER_LIST
-    ../include/sis/botson_sdk.hpp
-    ../include/sis/camera.hpp
-    ../include/sis/component.hpp
-    ../include/sis/context.hpp
-    ../include/sis/draw_array.hpp
-    ../include/sis/draw_array.tpp
-    ../include/sis/draw_command.hpp
-    ../include/sis/draw_elements.hpp
-    ../include/sis/draw_elements.tpp
-    ../include/sis/drawable.hpp
-    ../include/sis/event.hpp
-    ../include/sis/files.hpp
-    ../include/sis/framebuffer.hpp
-    ../include/sis/functions.hpp
-    ../include/sis/icanvas.hpp
-    ../include/sis/identifiable.hpp
-    ../include/sis/iprezi.h
-    ../include/sis/matrices.hpp
-    ../include/sis/pixel.hpp
-    ../include/sis/program.hpp
-    ../include/sis/renderbuffer.hpp
-    ../include/sis/rendercomponent.hpp
-    ../include/sis/screen.hpp
-    ../include/sis/shader.hpp
-    ../include/sis/sizable.hpp
-    ../include/sis/storage.hpp
-    ../include/sis/texture.hpp
-    ../include/sis/vertex_attrib.hpp
-    ../include/sis/vertex_attrib.tpp
-    ../include/sis/vertex_index.hpp
-    ../include/sis/vgl.hpp
-)
+file(GLOB_RECURSE HEADER_LIST "../include/*.hpp" "../include/*.tpp")
 
 find_package(OpenGL REQUIRED)
 find_package(JPEG REQUIRED)
@@ -52,6 +20,7 @@ add_library(sis SHARED
 )
 
 set_target_properties(sis PROPERTIES VERSION ${PROJECT_VERSION} SOVERSION 1)
+set_target_properties(sis PROPERTIES PUBLIC_HEADER "${HEADER_LIST}")
 
 target_include_directories(sis PUBLIC ../include)
 target_link_libraries(sis
@@ -71,8 +40,9 @@ source_group(
 configure_file(sis.pc.in sis.pc @ONLY)
 
 install(TARGETS sis
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    LIBRARY DESTINATION lib
+    PUBLIC_HEADER DESTINATION include/sis
 )
 
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sis.pc DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/sis.pc
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig)
