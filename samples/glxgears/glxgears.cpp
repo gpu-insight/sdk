@@ -381,10 +381,16 @@ static void multiply(GLfloat *m, const GLfloat *n) {
  * @param z the z component of the direction to rotate to
  */
 static void rotate(GLfloat *m, GLfloat angle, GLfloat x, GLfloat y, GLfloat z) {
-    double s, c;
+    double out_s, out_c;
+    float s, c;
 
-    sincos(angle, &s, &c);
-    GLdouble r[16] = {x * x * (1 - c) + c,
+    sincos(angle, &out_s, &out_c);
+
+    /* narrowing conversion */
+    s = out_s;
+    c = out_c;
+
+    GLfloat r[16] = {x * x * (1 - c) + c,
                      y * x * (1 - c) + z * s,
                      x * z * (1 - c) - y * s,
                      0,
@@ -401,7 +407,7 @@ static void rotate(GLfloat *m, GLfloat angle, GLfloat x, GLfloat y, GLfloat z) {
                      0,
                      1};
 
-    multiply(m, (GLfloat *)r);
+    multiply(m, r);
 }
 
 /**
