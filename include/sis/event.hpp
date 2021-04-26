@@ -1,12 +1,9 @@
 #pragma once
 
-#include "botson_sdk.hpp"
-
 class Event {
     virtual void type() {};
 };
 
-BOTSON_SDK_API
 class MouseEvent : public Event {
 
 public:
@@ -20,7 +17,6 @@ private:
     float _x, _y;
 };
 
-BOTSON_SDK_API
 class KeyEvent : public Event {
 public:
     KeyEvent(unsigned char key, float x, float y) : _key(key), _x(x), _y(y) {}
@@ -37,7 +33,6 @@ private:
     float _y;
 };
 
-BOTSON_SDK_API
 class ResizeEvent : public Event {
 public:
     ResizeEvent(int w, int h): _w(w), _h(h) {    }

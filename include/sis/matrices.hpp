@@ -4,11 +4,9 @@
 #include <glm/ext.hpp>
 #include <cstdlib>
 #include <stack>
-#include "botson_sdk.hpp"
 
 using namespace std;
 
-BOTSON_SDK_API
 class Matrices {
 public:
     static Matrices *instance();

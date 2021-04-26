@@ -4,9 +4,7 @@
 #include <cstdio>
 #include <iostream>
 #include <string>
-#include "botson_sdk.hpp"
 
-BOTSON_SDK_API
 class Shader {
 public:
   static Shader file(GLenum type, std::string path);

@@ -7,9 +7,7 @@
 #include <vector>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include "botson_sdk.hpp"
 
-BOTSON_SDK_API
 class Program {
 public:
   template <typename... Args>

@@ -3,9 +3,7 @@
 #include <iostream>
 #include <cmath>
 #include <GL/gl.h>
-#include "botson_sdk.hpp"
 
-BOTSON_SDK_API
 class Texture {
 public:
     Texture(GLenum target, GLsizei width = 0, GLsizei height = 0, GLsizei depth = 1, void *pixel = nullptr);
