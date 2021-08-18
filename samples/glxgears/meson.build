@@ -8,8 +8,8 @@ foreach s : samples
         s[0],
         s[1],
         cpp_args : ['-Wno-narrowing','-DGLX_GLXEXT_PROTOTYPES'],
-        dependencies : [gl_dep, sdk_dep, x11_dep],
-        include_directories : incdir,
+        dependencies : [gl_dep, x11_dep, sis_dep],
+        include_directories : [inc_samples, inc],
         install : true,
         install_dir : get_option('bindir')
     )

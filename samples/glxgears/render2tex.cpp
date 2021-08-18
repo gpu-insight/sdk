@@ -18,8 +18,8 @@
 #include <GL/gl.h>
 #include <GL/glx.h>
 #include <GL/glxext.h>
-#include <SDK/program.hpp>
-#include <SDK/shader.hpp>
+#include <sis/program.hpp>
+#include <sis/shader.hpp>
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include "config.h"

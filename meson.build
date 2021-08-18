@@ -1,45 +1,48 @@
-project(
-    'Sietium SDK',
-    ['c', 'cpp'],
-    version : '1.1.0',
-    default_options : ['c_std=c99', 'cpp_std=c++11']
+project('sis', 'cpp',
+    default_options: 'cpp_std=c++11',
+    version: '1.1.0',
+    meson_versoin: '>= 0.42.0'
 )
 
-cc = meson.get_compiler('c')
 cpp = meson.get_compiler('cpp')
 
+add_project_arguments('-DGL_GLEXT_PROTOTYPES', language : ['c', 'cpp'])
+add_project_link_arguments('-ljpeg', language : ['c', 'cpp'])
+
 # Dependencies
-dep_gl = dependency('GL', required : true)
-dep_x11 = dependency('x11', required : false)
-dep_egl = dependency('egl', required : false)
-dep_jpg = dependency('libjpeg', required : false)
-dep_png = dependency('libpng', required : true)
+gl_dep = dependency('GL', required : true)
+x11_dep = dependency('x11', required : false)
+egl_dep = dependency('egl', required : false)
+jpeg_dep = dependency('libjpeg', required : false)
+png_dep = dependency('libpng', required : true)
 
 sdk_priv_libs = []
-if dep_gl.found()
+if gl_dep.found()
     sdk_priv_libs += '-lGL'
 endif
-if dep_x11.found()
+if x11_dep.found()
     sdk_priv_libs += '-lX11'
 endif
-if dep_egl.found()
+if egl_dep.found()
     sdk_priv_libs += '-lEGL'
 endif
-if dep_jpg.found()
+if jpeg_dep.found()
     sdk_priv_libs += '-ljpeg'
 endif
-if dep_jpg.found()
+if png_dep.found()
     sdk_priv_libs += '-lpng'
 endif
 
-
 pkg = import('pkgconfig')
 
-subdir('sisdk')
+inc = include_directories('include')
+
+subdir('include')
+subdir('sis')
+subdir('samples')
 
 # Docs
 doxygen = find_program('doxygen', required : false)
 if doxygen.found()
     subdir('doc')
 endif
-
