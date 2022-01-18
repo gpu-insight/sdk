@@ -117,8 +117,6 @@ static GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
 static struct gear *gear1, *gear2, *gear3;
 /** The current gear rotation angle */
 static GLfloat angle = 0.0;
-/** The linked shader program */
-static Program *program;
 /** The location of the shader uniforms */
 static GLuint ModelViewProjectionMatrix_location, NormalMatrix_location,
     LightSourcePosition_location, MaterialColor_location;
@@ -655,21 +653,23 @@ static void init(void) {
     /* Compile the vertex shader */
     std::string data_path = std::string(SAMPLES_DATA_PATH);
 
-    program = Program::from(
-        Shader::file(GL_VERTEX_SHADER, data_path + "/shaders/gear.vert"),
-        Shader::file(GL_FRAGMENT_SHADER, data_path + "/shaders/gear.frag"));
+    /** The linked shader program */
+    NProgram<NShader<GL_VERTEX_SHADER>, NShader<GL_FRAGMENT_SHADER>> program(
+        data_path + "/shaders/gear.vert",
+        data_path + "/shaders/gear.frag"
+    );
 
-    program->activate();
+    program.activate();
 
     /* Get the locations of the uniforms so we can access them */
     ModelViewProjectionMatrix_location =
-        program->uniform("ModelViewProjectionMatrix");
+        program.uniform("ModelViewProjectionMatrix");
     NormalMatrix_location =
-        program->uniform("NormalMatrix");
+        program.uniform("NormalMatrix");
     LightSourcePosition_location =
-        program->uniform("LightSourcePosition");
+        program.uniform("LightSourcePosition");
     MaterialColor_location =
-        program->uniform("MaterialColor");
+        program.uniform("MaterialColor");
 
     /* Set the LightSourcePosition uniform which is constant throught the
      * program */
