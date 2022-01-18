@@ -29,6 +29,7 @@ target_link_libraries(sis
     PRIVATE ${JPEG_LIBRARIES}
     PRIVATE ${PNG_LIBRARIES})
 target_compile_features(sis PUBLIC cxx_std_11)
+target_compile_options(sis PRIVATE "-Wall")
 target_compile_definitions(sis PUBLIC GL_GLEXT_PROTOTYPES)
 
 source_group(
